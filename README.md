@@ -11,7 +11,7 @@ FUNCTION = "thou_shalt_do", TYPE, IDENTIFIER, "(", [{PARAM}], ")", BLOCK, "you_s
 PARAM = TYPE, IDENTIFIER ;
 
 FUNCTION_CALL = IDENTIFIER, "(", (EXPRESSION | COMPARISON), {",", (EXPRESSION | COMPARISON)}, ")" ;
-RETURN = "return_to_the_one_whom_bid_thou", (EXPRESSION | COMPARISON) ; 
+RETURN = "return_to_the_one_whom_bid_thou", (EXPRESSION | COMPARISON) ;
 
 BLOCK = "{", STATEMENT, { STATEMENT }, "}" ;
 STATEMENT = ( λ | ASSIGNMENT | PRINT | IF | WHILE | RETURN | FUNCTION_CALL) ;
