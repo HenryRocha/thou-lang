@@ -1,7 +1,7 @@
 from typing import Dict, Union
 
-from logger import logger
-from varTypes import Var, VarTypes
+from src.utils.logger import logger
+from src.models.value import Value, ValueType
 
 
 class SymbolTable:
@@ -10,18 +10,18 @@ class SymbolTable:
     def __init__(self) -> None:
         self.table = {}
 
-    def getVar(self, name: str) -> Union[VarTypes, Union[int, bool, str]]:
+    def getVar(self, name: str) -> Union[ValueType, Union[int, bool, str]]:
         """
         Gets the value for the given variable name.
         """
         logger.debug(f"[SymbolTable] Looking up variable '{name}'")
 
         if name in self.table:
-            return Var(self.table[name]["type"], self.table[name]["value"])
+            return Value(self.table[name]["type"], self.table[name]["value"])
         else:
             logger.critical(f"Unknown variable '{name}'.")
 
-    def setVar(self, name: str, varType: VarTypes, value: Union[int, bool, str]) -> None:
+    def setVar(self, name: str, varType: ValueType, value: Union[int, bool, str]) -> None:
         """
         Sets the value for the given variable name.
         """

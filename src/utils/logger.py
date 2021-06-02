@@ -15,12 +15,11 @@ class Logger:
         self.verbosity = verbosity
 
     def critical(self, msg: str) -> None:
-        print(f"[CRITCAL] {msg}")
+        print(f"[CRITICAL] {msg}")
         raise CompilerError(f"{msg}")
 
     def error(self, msg: str) -> None:
         print(f"[ERROR] {msg}")
-        raise CompilerError(f"{msg}")
 
     def success(self, msg: str) -> None:
         if self.enable and self.verbosity > 0:

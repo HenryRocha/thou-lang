@@ -1,6 +1,5 @@
 from sly import Lexer
-
-from logger import logger
+from src.utils.logger import logger
 
 
 class ThouLexer(Lexer):

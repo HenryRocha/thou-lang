@@ -1,10 +1,10 @@
 import argparse
 import pathlib
-from parser import ThouParser
 
-from logger import logger
-from symbolTable import SymbolTable
-from tokenizer import ThouLexer
+from src.compiler.parser import ThouParser
+from src.compiler.tokenizer import ThouLexer
+from src.models.symbolTable import SymbolTable
+from src.utils.logger import logger
 
 
 def main() -> None:

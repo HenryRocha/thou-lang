@@ -1,11 +1,10 @@
 from sly import Parser
 from sly.lex import Token
 
-from logger import logger
-from nodes import BinOp, Block, BoolVal, Comparison, Identifier, If, IntVal, Node, NoOp, Print, Readln, StringVal, UnOp, Variable, While
-from symbolTable import SymbolTable
-from tokenizer import ThouLexer
-from varTypes import VarTypes
+from src.models.nodes import *
+from src.utils.logger import logger
+from src.compiler.tokenizer import ThouLexer
+from src.models.value import ValueType
 
 
 class ThouParser(Parser):
@@ -59,27 +58,27 @@ class ThouParser(Parser):
 
         if commands == ["TYPE_INT", "IDENTIFIER", "SEPARATOR"]:
             logger.debug(f"[ParseCommand] IDENTIFIER is assigned on declaration")
-            ret = Identifier(varName=p._slice[1].value, varType=VarTypes.INT, children=[NoOp()])
+            ret = Identifier(varName=p._slice[1].value, varType=ValueType.INT, children=[NoOp()])
 
         elif commands == ["TYPE_INT", "IDENTIFIER", "ASSIGN", "or_expr", "SEPARATOR"]:
             logger.debug(f"[ParseCommand] IDENTIFIER is not assigned on declaration")
-            ret = Identifier(varName=p._slice[1].value, varType=VarTypes.INT, children=[p.or_expr])
+            ret = Identifier(varName=p._slice[1].value, varType=ValueType.INT, children=[p.or_expr])
 
         elif commands == ["TYPE_STRING", "IDENTIFIER", "SEPARATOR"]:
             logger.debug(f"[ParseCommand] IDENTIFIER is assigned on declaration")
-            ret = Identifier(varName=p._slice[1].value, varType=VarTypes.STRING, children=[NoOp()])
+            ret = Identifier(varName=p._slice[1].value, varType=ValueType.STRING, children=[NoOp()])
 
         elif commands == ["TYPE_STRING", "IDENTIFIER", "ASSIGN", "or_expr", "SEPARATOR"]:
             logger.debug(f"[ParseCommand] IDENTIFIER is not assigned on declaration")
-            ret = Identifier(varName=p._slice[1].value, varType=VarTypes.STRING, children=[p.or_expr])
+            ret = Identifier(varName=p._slice[1].value, varType=ValueType.STRING, children=[p.or_expr])
 
         elif commands == ["TYPE_BOOL", "IDENTIFIER", "SEPARATOR"]:
             logger.debug(f"[ParseCommand] IDENTIFIER is assigned on declaration")
-            ret = Identifier(varName=p._slice[1].value, varType=VarTypes.BOOL, children=[NoOp()])
+            ret = Identifier(varName=p._slice[1].value, varType=ValueType.BOOL, children=[NoOp()])
 
         elif commands == ["TYPE_BOOL", "IDENTIFIER", "ASSIGN", "or_expr", "SEPARATOR"]:
             logger.debug(f"[ParseCommand] IDENTIFIER is not assigned on declaration")
-            ret = Identifier(varName=p._slice[1].value, varType=VarTypes.BOOL, children=[p.or_expr])
+            ret = Identifier(varName=p._slice[1].value, varType=ValueType.BOOL, children=[p.or_expr])
 
         elif commands == ["IDENTIFIER", "ASSIGN", "or_expr", "SEPARATOR"]:
             logger.debug(f"[ParseCommand] IDENTIFIER reassign")
@@ -124,7 +123,7 @@ class ThouParser(Parser):
 
         elif commands == ["and_expr", "CMP_OR", "or_expr"]:
             logger.trace(f"[ParseOrExpr] Consumed CMP_AND")
-            ret = Comparison(operation=p._slice[1].type, children=[p.and_expr, p.or_expr])
+            ret = CompOp(operation=p._slice[1].type, children=[p.and_expr, p.or_expr])
 
         return ret
 
@@ -140,7 +139,7 @@ class ThouParser(Parser):
 
         elif commands == ["eq_expr", "CMP_AND", "and_expr"]:
             logger.trace(f"[ParseAndExpr] Consumed CMP_AND")
-            ret = Comparison(operation=p._slice[1].type, children=[p.eq_expr, p.and_expr])
+            ret = CompOp(operation=p._slice[1].type, children=[p.eq_expr, p.and_expr])
 
         return ret
 
@@ -156,7 +155,7 @@ class ThouParser(Parser):
 
         elif commands == ["rel_expr", "CMP_EQ", "eq_expr"]:
             logger.trace(f"[ParseEqExpr] Consumed CMP_GT")
-            ret = Comparison(operation=p._slice[1].type, children=[p.rel_expr, p.eq_expr])
+            ret = CompOp(operation=p._slice[1].type, children=[p.rel_expr, p.eq_expr])
 
         return ret
 
@@ -172,11 +171,11 @@ class ThouParser(Parser):
 
         elif commands == ["expr", "CMP_GT", "rel_expr"]:
             logger.trace(f"[ParseRelExpr] Consumed CMP_GT")
-            ret = Comparison(operation=p._slice[1].type, children=[p.expr, p.rel_expr])
+            ret = CompOp(operation=p._slice[1].type, children=[p.expr, p.rel_expr])
 
         elif commands == ["expr", "CMP_LT", "rel_expr"]:
             logger.trace(f"[ParseRelExpr] Consumed CMP_LT")
-            ret = Comparison(operation=p._slice[1].type, children=[p.expr, p.rel_expr])
+            ret = CompOp(operation=p._slice[1].type, children=[p.expr, p.rel_expr])
 
         return ret
 
