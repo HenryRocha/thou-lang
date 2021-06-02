@@ -19,8 +19,8 @@ class ThouParser(Parser):
     def __init__(self):
         self.symbolTable = {}
 
-    @_("LBRACKET { command } RBRACKET")
-    def block(self, p):
+    @_("LBRACKET { parseCommand } RBRACKET")
+    def parseBlock(self, p):
         logger.info(f"[ParseBlock] Start...")
 
         ret: Node = Block()
@@ -28,7 +28,7 @@ class ThouParser(Parser):
         commands = [str(t.type) if type(t) == Token else str(t) for t in p._slice]
         logger.debug(f"[ParseBlock] Block commands: {commands}")
         if commands == ["LBRACKET", "_1_repeat", "RBRACKET"]:
-            for n in p.command:
+            for n in p.parseCommand:
                 ret.addNode(n)
 
         logger.info(f"[ParseBlock] End")
@@ -37,19 +37,19 @@ class ThouParser(Parser):
     @_(
         "SEPARATOR",
         "TYPE_INT IDENTIFIER SEPARATOR",
-        "TYPE_INT IDENTIFIER ASSIGN or_expr SEPARATOR",
+        "TYPE_INT IDENTIFIER ASSIGN parseOrExpr SEPARATOR",
         "TYPE_STRING IDENTIFIER SEPARATOR",
-        "TYPE_STRING IDENTIFIER ASSIGN or_expr SEPARATOR",
+        "TYPE_STRING IDENTIFIER ASSIGN parseOrExpr SEPARATOR",
         "TYPE_BOOL IDENTIFIER SEPARATOR",
-        "TYPE_BOOL IDENTIFIER ASSIGN or_expr SEPARATOR",
-        "IDENTIFIER ASSIGN or_expr SEPARATOR",
-        "PRINT LPAREN or_expr RPAREN SEPARATOR",
-        "WHILE LPAREN or_expr RPAREN command",
-        "IF LPAREN or_expr RPAREN command ELSE command",
-        "IF LPAREN or_expr RPAREN command",
-        "block",
+        "TYPE_BOOL IDENTIFIER ASSIGN parseOrExpr SEPARATOR",
+        "IDENTIFIER ASSIGN parseOrExpr SEPARATOR",
+        "PRINT LPAREN parseOrExpr RPAREN SEPARATOR",
+        "WHILE LPAREN parseOrExpr RPAREN parseCommand",
+        "IF LPAREN parseOrExpr RPAREN parseCommand ELSE parseCommand",
+        "IF LPAREN parseOrExpr RPAREN parseCommand",
+        "parseBlock",
     )
-    def command(self, p):
+    def parseCommand(self, p):
         logger.info(f"[ParseCommand] Start...")
 
         ret: Node = NoOp()
@@ -60,163 +60,163 @@ class ThouParser(Parser):
             logger.debug(f"[ParseCommand] IDENTIFIER is assigned on declaration")
             ret = Identifier(varName=p._slice[1].value, varType=ValueType.INT, children=[NoOp()])
 
-        elif commands == ["TYPE_INT", "IDENTIFIER", "ASSIGN", "or_expr", "SEPARATOR"]:
+        elif commands == ["TYPE_INT", "IDENTIFIER", "ASSIGN", "parseOrExpr", "SEPARATOR"]:
             logger.debug(f"[ParseCommand] IDENTIFIER is not assigned on declaration")
-            ret = Identifier(varName=p._slice[1].value, varType=ValueType.INT, children=[p.or_expr])
+            ret = Identifier(varName=p._slice[1].value, varType=ValueType.INT, children=[p.parseOrExpr])
 
         elif commands == ["TYPE_STRING", "IDENTIFIER", "SEPARATOR"]:
             logger.debug(f"[ParseCommand] IDENTIFIER is assigned on declaration")
             ret = Identifier(varName=p._slice[1].value, varType=ValueType.STRING, children=[NoOp()])
 
-        elif commands == ["TYPE_STRING", "IDENTIFIER", "ASSIGN", "or_expr", "SEPARATOR"]:
+        elif commands == ["TYPE_STRING", "IDENTIFIER", "ASSIGN", "parseOrExpr", "SEPARATOR"]:
             logger.debug(f"[ParseCommand] IDENTIFIER is not assigned on declaration")
-            ret = Identifier(varName=p._slice[1].value, varType=ValueType.STRING, children=[p.or_expr])
+            ret = Identifier(varName=p._slice[1].value, varType=ValueType.STRING, children=[p.parseOrExpr])
 
         elif commands == ["TYPE_BOOL", "IDENTIFIER", "SEPARATOR"]:
             logger.debug(f"[ParseCommand] IDENTIFIER is assigned on declaration")
             ret = Identifier(varName=p._slice[1].value, varType=ValueType.BOOL, children=[NoOp()])
 
-        elif commands == ["TYPE_BOOL", "IDENTIFIER", "ASSIGN", "or_expr", "SEPARATOR"]:
+        elif commands == ["TYPE_BOOL", "IDENTIFIER", "ASSIGN", "parseOrExpr", "SEPARATOR"]:
             logger.debug(f"[ParseCommand] IDENTIFIER is not assigned on declaration")
-            ret = Identifier(varName=p._slice[1].value, varType=ValueType.BOOL, children=[p.or_expr])
+            ret = Identifier(varName=p._slice[1].value, varType=ValueType.BOOL, children=[p.parseOrExpr])
 
-        elif commands == ["IDENTIFIER", "ASSIGN", "or_expr", "SEPARATOR"]:
+        elif commands == ["IDENTIFIER", "ASSIGN", "parseOrExpr", "SEPARATOR"]:
             logger.debug(f"[ParseCommand] IDENTIFIER reassign")
-            ret = Identifier(varName=p._slice[0].value, varType=None, children=[p.or_expr])
+            ret = Identifier(varName=p._slice[0].value, varType=None, children=[p.parseOrExpr])
 
-        elif commands == ["PRINT", "LPAREN", "or_expr", "RPAREN", "SEPARATOR"]:
+        elif commands == ["PRINT", "LPAREN", "parseOrExpr", "RPAREN", "SEPARATOR"]:
             logger.debug(f"[ParseCommand] Consumed PRINT")
-            ret = Print(children=[p.or_expr])
+            ret = Print(children=[p.parseOrExpr])
 
-        elif commands == ["IF", "LPAREN", "or_expr", "RPAREN", "command"]:
+        elif commands == ["IF", "LPAREN", "parseOrExpr", "RPAREN", "parseCommand"]:
             logger.debug(f"[ParseCommand] Consumed IF without ELSE")
-            ret = If(condition=p.or_expr, ifTrue=p.command)
+            ret = If(condition=p.parseOrExpr, ifTrue=p.parseCommand)
 
-        elif commands == ["IF", "LPAREN", "or_expr", "RPAREN", "command", "ELSE", "command"]:
-            logger.debug(f"[ParseCommand] Consumed IF with ELSEeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee")
-            ret = If(condition=p.or_expr, ifTrue=p.command0, ifFalse=p.command1)
+        elif commands == ["IF", "LPAREN", "parseOrExpr", "RPAREN", "parseCommand", "ELSE", "parseCommand"]:
+            logger.debug(f"[ParseCommand] Consumed IF with ELSE")
+            ret = If(condition=p.parseOrExpr, ifTrue=p.parseCommand0, ifFalse=p.parseCommand1)
 
-        elif commands == ["WHILE", "LPAREN", "or_expr", "RPAREN", "command"]:
+        elif commands == ["WHILE", "LPAREN", "parseOrExpr", "RPAREN", "parseCommand"]:
             logger.debug(f"[ParseCommand] Consumed IF without ELSE")
-            ret = While(condition=p.or_expr, command=p.command)
+            ret = While(condition=p.parseOrExpr, command=p.parseCommand)
 
         elif commands == ["SEPARATOR"]:
             logger.debug(f"[ParseCommand] Consumed SEPARATOR")
             ret = NoOp()
 
-        elif commands == ["block"]:
+        elif commands == ["parseBlock"]:
             logger.debug(f"[ParseCommand] Consumed BLOCK")
-            ret = p.block
+            ret = p.parseBlock
 
         logger.info(f"[ParseCommand] End. Result:\n{ret}")
         return ret
 
-    @_("and_expr", "and_expr CMP_OR or_expr")
-    def or_expr(self, p):
+    @_("parseAndExpr", "parseAndExpr CMP_OR parseOrExpr")
+    def parseOrExpr(self, p):
         logger.info(f"[ParseOrExpr] Start...")
 
         ret: Node = NoOp()
 
         commands = [str(t.type) if type(t) == Token else str(t) for t in p._slice]
-        if commands == ["and_expr"]:
-            ret = p.and_expr
+        if commands == ["parseAndExpr"]:
+            ret = p.parseAndExpr
 
-        elif commands == ["and_expr", "CMP_OR", "or_expr"]:
+        elif commands == ["parseAndExpr", "CMP_OR", "parseOrExpr"]:
             logger.trace(f"[ParseOrExpr] Consumed CMP_AND")
-            ret = CompOp(operation=p._slice[1].type, children=[p.and_expr, p.or_expr])
+            ret = CompOp(operation=p._slice[1].type, children=[p.parseAndExpr, p.parseOrExpr])
 
         return ret
 
-    @_("eq_expr", "eq_expr CMP_AND and_expr")
-    def and_expr(self, p):
+    @_("parseEqExpr", "parseEqExpr CMP_AND parseAndExpr")
+    def parseAndExpr(self, p):
         logger.info(f"[ParseAndExpr] Start...")
 
         ret: Node = NoOp()
 
         commands = [str(t.type) if type(t) == Token else str(t) for t in p._slice]
-        if commands == ["eq_expr"]:
-            ret = p.eq_expr
+        if commands == ["parseEqExpr"]:
+            ret = p.parseEqExpr
 
-        elif commands == ["eq_expr", "CMP_AND", "and_expr"]:
+        elif commands == ["parseEqExpr", "CMP_AND", "parseAndExpr"]:
             logger.trace(f"[ParseAndExpr] Consumed CMP_AND")
-            ret = CompOp(operation=p._slice[1].type, children=[p.eq_expr, p.and_expr])
+            ret = CompOp(operation=p._slice[1].type, children=[p.parseEqExpr, p.parseAndExpr])
 
         return ret
 
-    @_("rel_expr", "rel_expr CMP_EQ eq_expr")
-    def eq_expr(self, p):
+    @_("parseRelExpr", "parseRelExpr CMP_EQ parseEqExpr")
+    def parseEqExpr(self, p):
         logger.info(f"[ParseEqExpr] Start...")
 
         ret: Node = NoOp()
 
         commands = [str(t.type) if type(t) == Token else str(t) for t in p._slice]
-        if commands == ["rel_expr"]:
-            ret = p.rel_expr
+        if commands == ["parseRelExpr"]:
+            ret = p.parseRelExpr
 
-        elif commands == ["rel_expr", "CMP_EQ", "eq_expr"]:
+        elif commands == ["parseRelExpr", "CMP_EQ", "parseEqExpr"]:
             logger.trace(f"[ParseEqExpr] Consumed CMP_GT")
-            ret = CompOp(operation=p._slice[1].type, children=[p.rel_expr, p.eq_expr])
+            ret = CompOp(operation=p._slice[1].type, children=[p.parseRelExpr, p.parseEqExpr])
 
         return ret
 
-    @_("expr", "expr CMP_GT rel_expr", "expr CMP_LT rel_expr")
-    def rel_expr(self, p):
+    @_("parseExpression", "parseExpression CMP_GT parseRelExpr", "parseExpression CMP_LT parseRelExpr")
+    def parseRelExpr(self, p):
         logger.info(f"[ParseRelExpr] Start...")
 
         ret: Node = NoOp()
 
         commands = [str(t.type) if type(t) == Token else str(t) for t in p._slice]
-        if commands == ["expr"]:
-            ret = p.expr
+        if commands == ["parseExpression"]:
+            ret = p.parseExpression
 
-        elif commands == ["expr", "CMP_GT", "rel_expr"]:
+        elif commands == ["parseExpression", "CMP_GT", "parseRelExpr"]:
             logger.trace(f"[ParseRelExpr] Consumed CMP_GT")
-            ret = CompOp(operation=p._slice[1].type, children=[p.expr, p.rel_expr])
+            ret = CompOp(operation=p._slice[1].type, children=[p.parseExpression, p.parseRelExpr])
 
-        elif commands == ["expr", "CMP_LT", "rel_expr"]:
+        elif commands == ["parseExpression", "CMP_LT", "parseRelExpr"]:
             logger.trace(f"[ParseRelExpr] Consumed CMP_LT")
-            ret = CompOp(operation=p._slice[1].type, children=[p.expr, p.rel_expr])
+            ret = CompOp(operation=p._slice[1].type, children=[p.parseExpression, p.parseRelExpr])
 
         return ret
 
-    @_("term", "term PLUS expr", "term MINUS expr")
-    def expr(self, p):
+    @_("parseTerm", "parseTerm PLUS parseExpression", "parseTerm MINUS parseExpression")
+    def parseExpression(self, p):
         logger.info(f"[ParseExpression] Start...")
 
         ret: Node = NoOp()
 
         commands = [str(t.type) if type(t) == Token else str(t) for t in p._slice]
-        if commands == ["term"]:
-            ret = p.term
+        if commands == ["parseTerm"]:
+            ret = p.parseTerm
 
-        elif commands == ["term", "PLUS", "expr"]:
+        elif commands == ["parseTerm", "PLUS", "parseExpression"]:
             logger.trace(f"[ParseExpression] Consumed PLUS")
-            ret = BinOp(operation=p._slice[1].type, children=[p.term, p.expr])
+            ret = BinOp(operation=p._slice[1].type, children=[p.parseTerm, p.parseExpression])
 
-        elif commands == ["term", "MINUS", "expr"]:
+        elif commands == ["parseTerm", "MINUS", "parseExpression"]:
             logger.trace(f"[ParseExpression] Consumed MINUS")
-            ret = BinOp(operation=p._slice[1].type, children=[p.term, p.expr])
+            ret = BinOp(operation=p._slice[1].type, children=[p.parseTerm, p.parseExpression])
 
         logger.info(f"[ParseExpression] End")
         return ret
 
-    @_("factor", "factor MULTIPLY term", "factor DIVIDE term")
-    def term(self, p):
+    @_("parseFactor", "parseFactor MULTIPLY parseTerm", "parseFactor DIVIDE parseTerm")
+    def parseTerm(self, p):
         logger.info("[ParseTerm] Start...")
 
         ret: Node = NoOp()
 
         commands = [str(t.type) if type(t) == Token else str(t) for t in p._slice]
-        if commands == ["factor"]:
-            ret = p.factor
+        if commands == ["parseFactor"]:
+            ret = p.parseFactor
 
-        elif commands == ["factor", "MULTIPLY", "term"]:
+        elif commands == ["parseFactor", "MULTIPLY", "parseTerm"]:
             logger.trace(f"[ParseTerm] Consumed MULTIPLY")
-            ret = BinOp(operation=p._slice[1].type, children=[p.factor, p.term])
+            ret = BinOp(operation=p._slice[1].type, children=[p.parseFactor, p.parseTerm])
 
-        elif commands == ["factor", "DIVIDE", "term"]:
+        elif commands == ["parseFactor", "DIVIDE", "parseTerm"]:
             logger.trace(f"[ParseTerm] Consumed DIVIDE")
-            ret = BinOp(operation=p._slice[1].type, children=[p.factor, p.term])
+            ret = BinOp(operation=p._slice[1].type, children=[p.parseFactor, p.parseTerm])
 
         logger.info("[ParseTerm] End")
         return ret
@@ -226,13 +226,13 @@ class ThouParser(Parser):
         "VAL_STRING",
         "VAL_BOOL",
         "IDENTIFIER",
-        "PLUS factor %prec UPLUS",
-        "MINUS factor %prec UMINUS",
-        "NOT factor %prec UNOT",
+        "PLUS parseFactor %prec UPLUS",
+        "MINUS parseFactor %prec UMINUS",
+        "NOT parseFactor %prec UNOT",
         "READLN LPAREN RPAREN",
-        "LPAREN or_expr RPAREN",
+        "LPAREN parseOrExpr RPAREN",
     )
-    def factor(self, p):
+    def parseFactor(self, p):
         logger.debug("[ParseFactor] Start...")
 
         ret: Node = NoOp()
@@ -250,28 +250,28 @@ class ThouParser(Parser):
             logger.debug(f"[ParseFactor] Consumed STRING_VALUE: {p._slice[0]}")
             ret = StringVal(value=str(p._slice[0].value[1:-1]))
 
-        elif commands == ["MINUS", "factor"]:
+        elif commands == ["MINUS", "parseFactor"]:
             logger.debug(f"[ParseFactor] Consumed PLUS: {p._slice[0]}")
             logger.trace("[ParseFactor] Started ParseFactor RECURSION...")
-            ret = UnOp(operation=p._slice[0].type, children=[p.factor])
+            ret = UnOp(operation=p._slice[0].type, children=[p.parseFactor])
             logger.trace("[ParseFactor] Ended ParseFactor RECURSION...")
 
-        elif commands == ["PLUS", "factor"]:
+        elif commands == ["PLUS", "parseFactor"]:
             logger.debug(f"[ParseFactor] Consumed MINUS: {p._slice[0]}")
             logger.trace("[ParseFactor] Started ParseFactor RECURSION...")
-            ret = UnOp(operation=p._slice[0].type, children=[p.factor])
+            ret = UnOp(operation=p._slice[0].type, children=[p.parseFactor])
             logger.trace("[ParseFactor] Ended ParseFactor RECURSION...")
 
-        elif commands == ["NOT", "factor"]:
+        elif commands == ["NOT", "parseFactor"]:
             logger.debug(f"[ParseFactor] Consumed NOT: {p._slice[0]}")
             logger.trace("[ParseFactor] Started ParseFactor RECURSION...")
-            ret = UnOp(operation=p._slice[0].type, children=[p.factor])
+            ret = UnOp(operation=p._slice[0].type, children=[p.parseFactor])
             logger.trace("[ParseFactor] Ended ParseFactor RECURSION...")
 
-        elif commands == ["LPAREN", "or_expr", "RPAREN"]:
+        elif commands == ["LPAREN", "parseOrExpr", "RPAREN"]:
             logger.debug(f"[ParseFactor] Consumed LEFT_PARENTHESIS: {p._slice[0]}")
             logger.trace("[ParseFactor] Started ParseOrExpr RECURSION...")
-            ret = p.or_expr
+            ret = p.parseOrExpr
             logger.trace("[ParseFactor] Ended ParseOrExpr RECURSION...")
 
         elif commands == ["IDENTIFIER"]:
