@@ -3,6 +3,7 @@ import pathlib
 
 from src.compiler.parser import ThouParser
 from src.compiler.tokenizer import ThouLexer
+from src.models.nodes.structures.funcCall import FuncCall
 from src.models.symbolTable import SymbolTable
 from src.utils.logger import logger
 
@@ -28,13 +29,19 @@ def main() -> None:
 
     lexer = ThouLexer()
     tokens = lexer.tokenize(sourceCode)
-
     parser = ThouParser()
-    finalAST = parser.parse(tokens)
-    logger.success(f"Final AST:\n{finalAST}")
 
-    # symbolTable = SymbolTable()
-    # finalAST.evaluate(symbolTable)
+    finalAST = parser.parse(tokens)
+    finalAST.addNode(FuncCall(value="main", arguments=[]))
+    logger.success(f"[Main] Final AST:\n{finalAST}")
+
+    for node in finalAST.children:
+        logger.info(f"[Main] Running evaluate for {type(node)}")
+
+        if type(node) == FuncCall and node.value == "main":
+            node.evaluate(symbolTable=SymbolTable())
+        else:
+            node.evaluate()
 
 
 if __name__ == "__main__":
