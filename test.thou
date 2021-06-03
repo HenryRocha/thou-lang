@@ -1,0 +1,18 @@
+maths soma(maths a, maths b)
+{
+    maths c = a + b;
+
+    shouldst_this_be_true(c == 2)
+    {
+        return_to_the_one_whom_bid_thou a + b;
+    }
+    if_naught
+    {
+        return_to_the_one_whom_bid_thou - 99;
+    }
+}
+
+maths main()
+{
+    thou_shalt_utter(soma(1, 2));
+}

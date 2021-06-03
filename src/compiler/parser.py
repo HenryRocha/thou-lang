@@ -16,7 +16,8 @@ class ThouParser(Parser):
         ("right", UMINUS, UPLUS, UNOT),
     )
 
-    debugfile = "./parser.out"
+    debugfile = "./out/parser.out"
+    start = "parseFunctions"
 
     def __init__(self):
         self.symbolTable = {}
@@ -37,11 +38,10 @@ class ThouParser(Parser):
         ret: Node = NoOp()
 
         commands = [str(t.type) if type(t) == Token else str(t) for t in p._slice]
-        logger.trace(f"[ParseFuncDef] Commands {commands}")
         if commands == ["TYPE_INT", "IDENTIFIER", "LPAREN", "_4_repeat", "RPAREN", "parseCommand"]:
             logger.debug(f"[ParseFuncDef] Consumed function declaration '{p._slice[1].value}'")
 
-            ret = FuncDec(value=p._slice[1].value, retType=p._slice[0].value)
+            ret = FuncDec(value=p._slice[1].value, retType=ValueType.INT)
             logger.trace(f"[ParseFunctionDef] Arguments for '{p._slice[1].value}' {type(p._4_repeat)} {p._4_repeat}")
             ret.setArguments(p._4_repeat[0][0] if len(p._4_repeat) > 0 else [])
             ret.setStatements(p.parseCommand.children)
@@ -52,7 +52,7 @@ class ThouParser(Parser):
 
     @_("parseFuncArgDef { ARG_SEPARATOR parseFuncArgDef }")
     def parseFuncDefArgs(self, p):
-        ret: List[Value] = [p.parseFuncArgDef0] + [arg[1] for arg in p._5_repeat]
+        ret: List[FuncArg] = [p.parseFuncArgDef0] + [arg[1] for arg in p._5_repeat]
         logger.debug(f"[ParseFuncDefArgs] Consumed {len(ret)} arguments: {ret}")
         return ret
 
@@ -65,11 +65,11 @@ class ThouParser(Parser):
         logger.trace(f"[ParseFuncDefArg] Consumed argument {p._slice}")
 
         if p._slice[0].type == "TYPE_INT":
-            return Value(ValueType.INT, p._slice[1].value)
+            return FuncArg(ValueType.INT, p._slice[1].value)
         elif p._slice[0].type == "TYPE_BOOL":
-            return Value(ValueType.BOOL, p._slice[1].value)
+            return FuncArg(ValueType.BOOL, p._slice[1].value)
         elif p._slice[0].type == "TYPE_STRING":
-            return Value(ValueType.STRING, p._slice[1].value)
+            return FuncArg(ValueType.STRING, p._slice[1].value)
 
     @_("LBRACKET { parseCommand } RBRACKET")
     def parseBlock(self, p):
@@ -105,8 +105,6 @@ class ThouParser(Parser):
         ret: Node = NoOp()
 
         commands = [str(t.type) if type(t) == Token else str(t) for t in p._slice]
-        logger.trace(f"[ParseCommand] Commands: {commands}")
-
         if commands == ["TYPE_INT", "IDENTIFIER", "SEPARATOR"]:
             logger.debug(f"[ParseCommand] Consumed IDENTIFIER, not assigned on declaration")
             ret = Identifier(varName=p._slice[1].value, varType=ValueType.INT, children=[NoOp()])
@@ -175,11 +173,14 @@ class ThouParser(Parser):
 
     @_("parseOrExpr { ARG_SEPARATOR parseOrExpr }")
     def parseFuncCallArgs(self, p):
-        ret: List[FuncArg] = [p.parseOrExpr0] + [arg[1] for arg in p._8_repeat]
+        ret: List[Node] = [p.parseOrExpr0] + [arg[1] for arg in p._8_repeat]
         logger.debug(f"[ParseFunctionCallArgs] Consumed {len(ret)} arguments: {ret}")
         return ret
 
-    @_("parseAndExpr", "parseAndExpr CMP_OR parseOrExpr")
+    @_(
+        "parseAndExpr",
+        "parseAndExpr CMP_OR parseOrExpr",
+    )
     def parseOrExpr(self, p):
         ret: Node = NoOp()
 
@@ -193,7 +194,10 @@ class ThouParser(Parser):
 
         return ret
 
-    @_("parseEqExpr", "parseEqExpr CMP_AND parseAndExpr")
+    @_(
+        "parseEqExpr",
+        "parseEqExpr CMP_AND parseAndExpr",
+    )
     def parseAndExpr(self, p):
         ret: Node = NoOp()
 
@@ -207,7 +211,13 @@ class ThouParser(Parser):
 
         return ret
 
-    @_("parseRelExpr", "parseRelExpr CMP_EQ parseEqExpr")
+    @_(
+        "parseRelExpr",
+        "parseRelExpr CMP_EQ parseEqExpr",
+        "parseRelExpr CMP_LEQ parseEqExpr",
+        "parseRelExpr CMP_NEQ parseEqExpr",
+        "parseRelExpr CMP_GEQ parseEqExpr",
+    )
     def parseEqExpr(self, p):
         ret: Node = NoOp()
 
@@ -215,13 +225,20 @@ class ThouParser(Parser):
         if commands == ["parseRelExpr"]:
             ret = p.parseRelExpr
 
-        elif commands == ["parseRelExpr", "CMP_EQ", "parseEqExpr"]:
-            logger.trace(f"[ParseEqExpr] Consumed CMP_GT")
+        elif len(commands) == 3:
+            logger.trace(f"[ParseEqExpr] Consumed compare operation {p._slice[1].value}")
             ret = CompOp(operation=p._slice[1].type, children=[p.parseRelExpr, p.parseEqExpr])
+
+        else:
+            logger.critical(f"[ParseEqExpr] Unexpected commands {commands}")
 
         return ret
 
-    @_("parseExpression", "parseExpression CMP_GT parseRelExpr", "parseExpression CMP_LT parseRelExpr")
+    @_(
+        "parseExpression",
+        "parseExpression CMP_GT parseRelExpr",
+        "parseExpression CMP_LT parseRelExpr",
+    )
     def parseRelExpr(self, p):
         ret: Node = NoOp()
 

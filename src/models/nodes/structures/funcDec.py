@@ -5,7 +5,6 @@ from src.models.functionTable import functionTable
 from src.models.nodes.node import Node
 from src.models.symbolTable import SymbolTable
 from src.models.value import ValueType
-from src.utils.logger import logger
 
 
 class FuncDec(Node):
@@ -23,11 +22,9 @@ class FuncDec(Node):
         self.symbolTable = None
 
     def evaluate(self) -> None:
-        logger.debug(f"[FuncDec] Updating FuncTable")
-        functionTable.setFunc(self.value.value, self)
+        functionTable.setFunc(self.value, self)
 
     def setArguments(self, args: List[ValueType]) -> None:
-        logger.trace(f"[FuncDec] Arguments: {args}")
         self.arguments = args
 
     def addArg(self, arg: ValueType) -> None:

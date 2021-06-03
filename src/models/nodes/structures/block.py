@@ -1,7 +1,9 @@
-from typing import List
+from typing import List, Union
 
 from src.models.nodes.node import Node
+from src.models.nodes.structures.s_return import Return
 from src.models.symbolTable import SymbolTable
+from src.models.value import Value
 from src.utils.logger import logger
 
 
@@ -14,7 +16,10 @@ class Block(Node):
     def evaluate(self, symbolTable: SymbolTable) -> None:
         for node in self.children:
             logger.debug(f"[Block] Running evaluate for {type(node)}")
-            node.evaluate(symbolTable=symbolTable)
+            ret: Union[None, Value] = node.evaluate(symbolTable=symbolTable)
+
+            if type(node) == Return:
+                return ret
 
     def setNodes(self, nodes: List[Node]) -> None:
         self.children = nodes

@@ -15,8 +15,7 @@ class BinOp(Node):
         var1: Value = self.children[0].evaluate(symbolTable=symbolTable)
         var2: Value = self.children[1].evaluate(symbolTable=symbolTable)
 
-        logger.debug(f"[BinOp] {var1} {self.operation} {var2}")
-        logger.debug(f"[BinOp] Multiplying {var1.value * var2.value}")
+        logger.trace(f"[BinOp] {var1} {self.operation} {var2}")
 
         if (var1.varType in [ValueType.INT, ValueType.BOOL] and var2.varType == ValueType.STRING) or (
             var1.varType == ValueType.STRING and var2.varType in [ValueType.INT, ValueType.BOOL]
