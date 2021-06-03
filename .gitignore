@@ -130,3 +130,6 @@ dmypy.json
 
 # Ignore VSCode settings
 .vscode
+
+# Ignore .out folder
+out/
