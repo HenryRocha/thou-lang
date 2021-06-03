@@ -16,22 +16,72 @@ class ThouParser(Parser):
         ("right", UMINUS, UPLUS, UNOT),
     )
 
+    debugfile = "./parser.out"
+
     def __init__(self):
         self.symbolTable = {}
 
+    @_("{ parseFuncDef }")
+    def parseFunctions(self, p):
+        ret: Block = Block()
+        for node in p.parseFuncDef:
+            ret.addNode(node)
+        return ret
+
+    @_(
+        "TYPE_INT IDENTIFIER LPAREN { parseFuncDefArgs } RPAREN parseCommand",
+        "TYPE_BOOL IDENTIFIER LPAREN { parseFuncDefArgs } RPAREN parseCommand",
+        "TYPE_STRING IDENTIFIER LPAREN { parseFuncDefArgs } RPAREN parseCommand",
+    )
+    def parseFuncDef(self, p):
+        ret: Node = NoOp()
+
+        commands = [str(t.type) if type(t) == Token else str(t) for t in p._slice]
+        logger.trace(f"[ParseFuncDef] Commands {commands}")
+        if commands == ["TYPE_INT", "IDENTIFIER", "LPAREN", "_4_repeat", "RPAREN", "parseCommand"]:
+            logger.debug(f"[ParseFuncDef] Consumed function declaration '{p._slice[1].value}'")
+
+            ret = FuncDec(value=p._slice[1].value, retType=p._slice[0].value)
+            logger.trace(f"[ParseFunctionDef] Arguments for '{p._slice[1].value}' {type(p._4_repeat)} {p._4_repeat}")
+            ret.setArguments(p._4_repeat[0][0] if len(p._4_repeat) > 0 else [])
+            ret.setStatements(p.parseCommand.children)
+        else:
+            logger.critical(f"[ParseFuncDef] Unexpected commands {commands}")
+
+        return ret
+
+    @_("parseFuncArgDef { ARG_SEPARATOR parseFuncArgDef }")
+    def parseFuncDefArgs(self, p):
+        ret: List[Value] = [p.parseFuncArgDef0] + [arg[1] for arg in p._5_repeat]
+        logger.debug(f"[ParseFuncDefArgs] Consumed {len(ret)} arguments: {ret}")
+        return ret
+
+    @_(
+        "TYPE_INT IDENTIFIER",
+        "TYPE_BOOL IDENTIFIER",
+        "TYPE_STRING IDENTIFIER",
+    )
+    def parseFuncArgDef(self, p):
+        logger.trace(f"[ParseFuncDefArg] Consumed argument {p._slice}")
+
+        if p._slice[0].type == "TYPE_INT":
+            return Value(ValueType.INT, p._slice[1].value)
+        elif p._slice[0].type == "TYPE_BOOL":
+            return Value(ValueType.BOOL, p._slice[1].value)
+        elif p._slice[0].type == "TYPE_STRING":
+            return Value(ValueType.STRING, p._slice[1].value)
+
     @_("LBRACKET { parseCommand } RBRACKET")
     def parseBlock(self, p):
-        logger.info(f"[ParseBlock] Start...")
-
         ret: Node = Block()
 
         commands = [str(t.type) if type(t) == Token else str(t) for t in p._slice]
-        logger.debug(f"[ParseBlock] Block commands: {commands}")
-        if commands == ["LBRACKET", "_1_repeat", "RBRACKET"]:
-            for n in p.parseCommand:
-                ret.addNode(n)
+        if commands == ["LBRACKET", "_6_repeat", "RBRACKET"]:
+            logger.debug(f"[ParseBlock] Consumed block")
+            ret.setNodes(nodes=[node[0] for node in p._6_repeat])
+        else:
+            logger.critical(f"[ParseBlock] Unexpected commands {commands}")
 
-        logger.info(f"[ParseBlock] End")
         return ret
 
     @_(
@@ -43,46 +93,52 @@ class ThouParser(Parser):
         "TYPE_BOOL IDENTIFIER SEPARATOR",
         "TYPE_BOOL IDENTIFIER ASSIGN parseOrExpr SEPARATOR",
         "IDENTIFIER ASSIGN parseOrExpr SEPARATOR",
+        "IDENTIFIER LPAREN { parseFuncCallArgs } RPAREN SEPARATOR",
         "PRINT LPAREN parseOrExpr RPAREN SEPARATOR",
         "WHILE LPAREN parseOrExpr RPAREN parseCommand",
         "IF LPAREN parseOrExpr RPAREN parseCommand ELSE parseCommand",
         "IF LPAREN parseOrExpr RPAREN parseCommand",
+        "RETURN parseOrExpr SEPARATOR",
         "parseBlock",
     )
     def parseCommand(self, p):
-        logger.info(f"[ParseCommand] Start...")
-
         ret: Node = NoOp()
 
         commands = [str(t.type) if type(t) == Token else str(t) for t in p._slice]
+        logger.trace(f"[ParseCommand] Commands: {commands}")
 
         if commands == ["TYPE_INT", "IDENTIFIER", "SEPARATOR"]:
-            logger.debug(f"[ParseCommand] IDENTIFIER is assigned on declaration")
+            logger.debug(f"[ParseCommand] Consumed IDENTIFIER, not assigned on declaration")
             ret = Identifier(varName=p._slice[1].value, varType=ValueType.INT, children=[NoOp()])
 
         elif commands == ["TYPE_INT", "IDENTIFIER", "ASSIGN", "parseOrExpr", "SEPARATOR"]:
-            logger.debug(f"[ParseCommand] IDENTIFIER is not assigned on declaration")
+            logger.debug(f"[ParseCommand] Consumed IDENTIFIER, assigned on declaration")
             ret = Identifier(varName=p._slice[1].value, varType=ValueType.INT, children=[p.parseOrExpr])
 
         elif commands == ["TYPE_STRING", "IDENTIFIER", "SEPARATOR"]:
-            logger.debug(f"[ParseCommand] IDENTIFIER is assigned on declaration")
+            logger.debug(f"[ParseCommand] Consumed IDENTIFIER, not assigned on declaration")
             ret = Identifier(varName=p._slice[1].value, varType=ValueType.STRING, children=[NoOp()])
 
         elif commands == ["TYPE_STRING", "IDENTIFIER", "ASSIGN", "parseOrExpr", "SEPARATOR"]:
-            logger.debug(f"[ParseCommand] IDENTIFIER is not assigned on declaration")
+            logger.debug(f"[ParseCommand] Consumed IDENTIFIER, assigned on declaration")
             ret = Identifier(varName=p._slice[1].value, varType=ValueType.STRING, children=[p.parseOrExpr])
 
         elif commands == ["TYPE_BOOL", "IDENTIFIER", "SEPARATOR"]:
-            logger.debug(f"[ParseCommand] IDENTIFIER is assigned on declaration")
+            logger.debug(f"[ParseCommand] Consumed IDENTIFIER, not assigned on declaration")
             ret = Identifier(varName=p._slice[1].value, varType=ValueType.BOOL, children=[NoOp()])
 
         elif commands == ["TYPE_BOOL", "IDENTIFIER", "ASSIGN", "parseOrExpr", "SEPARATOR"]:
-            logger.debug(f"[ParseCommand] IDENTIFIER is not assigned on declaration")
+            logger.debug(f"[ParseCommand] Consumed IDENTIFIER, assigned on declaration")
             ret = Identifier(varName=p._slice[1].value, varType=ValueType.BOOL, children=[p.parseOrExpr])
 
         elif commands == ["IDENTIFIER", "ASSIGN", "parseOrExpr", "SEPARATOR"]:
-            logger.debug(f"[ParseCommand] IDENTIFIER reassign")
+            logger.debug(f"[ParseCommand] Consumed IDENTIFIER reassign")
             ret = Identifier(varName=p._slice[0].value, varType=None, children=[p.parseOrExpr])
+
+        elif commands == ["IDENTIFIER", "LPAREN", "_7_repeat", "RPAREN", "SEPARATOR"]:
+            logger.debug(f"[ParseCommand] Consumed function call '{p._slice[0].value}'")
+            logger.trace(f"[ParseCommand] Arguments for '{p._slice[0].value}' {type(p._7_repeat)} {p._7_repeat}")
+            ret = FuncCall(value=p._slice[0].value, arguments=p._7_repeat[0][0] if len(p._7_repeat) > 0 else [])
 
         elif commands == ["PRINT", "LPAREN", "parseOrExpr", "RPAREN", "SEPARATOR"]:
             logger.debug(f"[ParseCommand] Consumed PRINT")
@@ -104,17 +160,27 @@ class ThouParser(Parser):
             logger.debug(f"[ParseCommand] Consumed SEPARATOR")
             ret = NoOp()
 
+        elif commands == ["RETURN", "parseOrExpr", "SEPARATOR"]:
+            logger.debug(f"[ParseCommand] Consumed RETURN")
+            ret = Return(value=p._slice[0].value, child=p.parseOrExpr)
+
         elif commands == ["parseBlock"]:
             logger.debug(f"[ParseCommand] Consumed BLOCK")
             ret = p.parseBlock
 
-        logger.info(f"[ParseCommand] End. Result:\n{ret}")
+        else:
+            logger.critical(f"[ParseCommand] Unexpected commands {commands}")
+
+        return ret
+
+    @_("parseOrExpr { ARG_SEPARATOR parseOrExpr }")
+    def parseFuncCallArgs(self, p):
+        ret: List[FuncArg] = [p.parseOrExpr0] + [arg[1] for arg in p._8_repeat]
+        logger.debug(f"[ParseFunctionCallArgs] Consumed {len(ret)} arguments: {ret}")
         return ret
 
     @_("parseAndExpr", "parseAndExpr CMP_OR parseOrExpr")
     def parseOrExpr(self, p):
-        logger.info(f"[ParseOrExpr] Start...")
-
         ret: Node = NoOp()
 
         commands = [str(t.type) if type(t) == Token else str(t) for t in p._slice]
@@ -129,8 +195,6 @@ class ThouParser(Parser):
 
     @_("parseEqExpr", "parseEqExpr CMP_AND parseAndExpr")
     def parseAndExpr(self, p):
-        logger.info(f"[ParseAndExpr] Start...")
-
         ret: Node = NoOp()
 
         commands = [str(t.type) if type(t) == Token else str(t) for t in p._slice]
@@ -145,8 +209,6 @@ class ThouParser(Parser):
 
     @_("parseRelExpr", "parseRelExpr CMP_EQ parseEqExpr")
     def parseEqExpr(self, p):
-        logger.info(f"[ParseEqExpr] Start...")
-
         ret: Node = NoOp()
 
         commands = [str(t.type) if type(t) == Token else str(t) for t in p._slice]
@@ -161,8 +223,6 @@ class ThouParser(Parser):
 
     @_("parseExpression", "parseExpression CMP_GT parseRelExpr", "parseExpression CMP_LT parseRelExpr")
     def parseRelExpr(self, p):
-        logger.info(f"[ParseRelExpr] Start...")
-
         ret: Node = NoOp()
 
         commands = [str(t.type) if type(t) == Token else str(t) for t in p._slice]
@@ -181,8 +241,6 @@ class ThouParser(Parser):
 
     @_("parseTerm", "parseTerm PLUS parseExpression", "parseTerm MINUS parseExpression")
     def parseExpression(self, p):
-        logger.info(f"[ParseExpression] Start...")
-
         ret: Node = NoOp()
 
         commands = [str(t.type) if type(t) == Token else str(t) for t in p._slice]
@@ -197,13 +255,10 @@ class ThouParser(Parser):
             logger.trace(f"[ParseExpression] Consumed MINUS")
             ret = BinOp(operation=p._slice[1].type, children=[p.parseTerm, p.parseExpression])
 
-        logger.info(f"[ParseExpression] End")
         return ret
 
     @_("parseFactor", "parseFactor MULTIPLY parseTerm", "parseFactor DIVIDE parseTerm")
     def parseTerm(self, p):
-        logger.info("[ParseTerm] Start...")
-
         ret: Node = NoOp()
 
         commands = [str(t.type) if type(t) == Token else str(t) for t in p._slice]
@@ -218,7 +273,6 @@ class ThouParser(Parser):
             logger.trace(f"[ParseTerm] Consumed DIVIDE")
             ret = BinOp(operation=p._slice[1].type, children=[p.parseFactor, p.parseTerm])
 
-        logger.info("[ParseTerm] End")
         return ret
 
     @_(
@@ -226,6 +280,7 @@ class ThouParser(Parser):
         "VAL_STRING",
         "VAL_BOOL",
         "IDENTIFIER",
+        "IDENTIFIER LPAREN { parseFuncCallArgs } RPAREN",
         "PLUS parseFactor %prec UPLUS",
         "MINUS parseFactor %prec UMINUS",
         "NOT parseFactor %prec UNOT",
@@ -233,8 +288,6 @@ class ThouParser(Parser):
         "LPAREN parseOrExpr RPAREN",
     )
     def parseFactor(self, p):
-        logger.debug("[ParseFactor] Start...")
-
         ret: Node = NoOp()
 
         commands = [str(t.type) if type(t) == Token else str(t) for t in p._slice]
@@ -278,12 +331,16 @@ class ThouParser(Parser):
             logger.debug(f"[ParseFactor] Consumed VARIABLE: {p._slice[0]}")
             ret = Variable(varName=p._slice[0].value)
 
+        elif commands == ["IDENTIFIER", "LPAREN", "_9_repeat", "RPAREN"]:
+            logger.debug(f"[ParseFactor] Consumed function call '{p._slice[0].value}'")
+            logger.trace(f"[ParseFactor] Arguments for '{p._slice[0].value}' {type(p._9_repeat)} {p._9_repeat}")
+            ret = FuncCall(value=p._slice[0].value, arguments=p._9_repeat[0][0] if len(p._9_repeat) > 0 else [])
+
         elif commands == ["READLN", "LPAREN", "RPAREN"]:
             logger.debug(f"[ParseFactor] Consumed READLN: {p._slice[0]}")
             ret = Readln()
 
         else:
-            logger.critical(f"[ParseFactor] Unexpected token: {p._slice[0]}")
+            logger.critical(f"[ParseFactor] Unexpected commands: {commands}")
 
-        logger.debug("[ParseFactor] End")
         return ret

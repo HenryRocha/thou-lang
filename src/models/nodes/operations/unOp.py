@@ -17,3 +17,13 @@ class UnOp(Node):
             return Value(ValueType.INT, -var.value)
         elif self.operation == "NOT":
             return Value(ValueType.BOOL, not bool(var.value))
+
+    def traverse(self, level: int = 0) -> str:
+        tabs: str = "\t" * int(level) if int(level) > 0 else ""
+
+        outStr: str = f"{tabs}NT({type(self)}): VV({self.operation})\n"
+
+        for child in self.children:
+            outStr += child.traverse(int(level + 1))
+
+        return outStr

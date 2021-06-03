@@ -9,3 +9,10 @@ class NoOp(Node):
 
     def evaluate(self, symbolTable: SymbolTable) -> int:
         return Value(ValueType.INT, 0)
+
+    def traverse(self, level: int = 0) -> str:
+        tabs: str = "\t" * int(level) if int(level) > 0 else ""
+
+        outStr: str = f"{tabs}NT({type(self)})\n"
+
+        return outStr

@@ -33,3 +33,13 @@ class BinOp(Node):
             return Value(ValueType.INT, var1.value // var2.value)
         else:
             logger.critical(f"[BinOp] Unknown operation: {self.operation}")
+
+    def traverse(self, level: int = 0) -> str:
+        tabs: str = "\t" * int(level) if int(level) > 0 else ""
+
+        outStr: str = f"{tabs}NT({type(self)}): VV({self.operation})\n"
+
+        for child in self.children:
+            outStr += child.traverse(int(level + 1))
+
+        return outStr

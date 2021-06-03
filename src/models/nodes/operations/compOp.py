@@ -19,7 +19,7 @@ class CompOp(Node):
         if (leftSide.varType in [ValueType.INT, ValueType.BOOL] and rightSide.varType == ValueType.STRING) or (
             leftSide.varType == ValueType.STRING and rightSide.varType in [ValueType.INT, ValueType.BOOL]
         ):
-            logger.critical(f"[BinOp] Variable types are different. {leftSide.varType} != {rightSide.varType}")
+            logger.critical(f"[Consumed] Variable types are different. {leftSide.varType} != {rightSide.varType}")
 
         result: bool = False
         if self.operation == "CMP_EQ":
@@ -37,3 +37,13 @@ class CompOp(Node):
 
         logger.debug(f"[CompOp] Result: {result}")
         return Value(ValueType.BOOL, result)
+
+    def traverse(self, level: int = 0) -> str:
+        tabs: str = "\t" * int(level) if int(level) > 0 else ""
+
+        outStr: str = f"{tabs}NT({type(self)}): VV({self.operation})\n"
+
+        for child in self.children:
+            outStr += child.traverse(int(level + 1))
+
+        return outStr

@@ -30,12 +30,14 @@ class ThouLexer(Lexer):
         CMP_AND,
         CMP_OR,
         SEPARATOR,
+        ARG_SEPARATOR,
         TYPE_INT,
         TYPE_BOOL,
         TYPE_STRING,
         VAL_BOOL,
         VAL_NUMBER,
         VAL_STRING,
+        RETURN,
     }
 
     # String containing ignored characters between tokens.
@@ -54,6 +56,7 @@ class ThouLexer(Lexer):
     IDENTIFIER["kayne_west_phrase"] = TYPE_STRING
     IDENTIFIER["it_is_sooth"] = VAL_BOOL
     IDENTIFIER["it_is_false"] = VAL_BOOL
+    IDENTIFIER["return_to_the_one_whom_bid_thou"] = RETURN
 
     VAL_NUMBER = r"\d+"
     VAL_STRING = r"""("[^"\\]*(\\.[^"\\]*)*"|'[^'\\]*(\\.[^'\\]*)*')"""
@@ -76,6 +79,7 @@ class ThouLexer(Lexer):
 
     ASSIGN = r"="
     SEPARATOR = r";"
+    ARG_SEPARATOR = r","
 
     LPAREN = r"\("
     RPAREN = r"\)"

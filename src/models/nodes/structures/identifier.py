@@ -8,10 +8,9 @@ from src.utils.logger import logger
 
 class Identifier(Node):
     def __init__(self, varType: ValueType, varName: Union[int, bool, str], children: List[Node]) -> None:
-        super().__init__()
+        super().__init__(children=children)
         self.varName = varName
         self.varType = varType
-        self.children = children
 
     def evaluate(self, symbolTable: SymbolTable) -> None:
         if not symbolTable.declared(self.varName):
@@ -45,3 +44,13 @@ class Identifier(Node):
                 symbolTable.setVar(name=self.varName, varType=existingVar.varType, value=bool(var.value))
             elif existingVar.varType == ValueType.STRING:
                 symbolTable.setVar(name=self.varName, varType=existingVar.varType, value=str(var.value))
+
+    def traverse(self, level: int = 0) -> str:
+        tabs: str = "\t" * int(level) if int(level) > 0 else ""
+
+        outStr: str = f"{tabs}NT({type(self)}) VT({self.varType}) VV({self.varName})\n"
+
+        for child in self.children:
+            outStr += child.traverse(level=level + 1)
+
+        return outStr

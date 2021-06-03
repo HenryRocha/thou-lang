@@ -21,3 +21,14 @@ class If(Node):
             return self.children[0].evaluate(symbolTable=symbolTable)
         elif self.children[1] != None:
             return self.children[1].evaluate(symbolTable=symbolTable)
+
+    def traverse(self, level: int = 0) -> str:
+        tabs: str = "\t" * int(level) if int(level) > 0 else ""
+
+        outStr: str = f"{tabs}NT({type(self)})\n"
+        outStr += f"{tabs}Condition: {self.condition.traverse(level=level+1)}"
+
+        for child in self.children:
+            outStr += child.traverse(level=level + 1)
+
+        return outStr

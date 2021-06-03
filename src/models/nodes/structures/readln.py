@@ -15,3 +15,10 @@ class Readln(Node):
             return Value(ValueType.INT, int(inputStr))
         else:
             logger.critical(f"[Readln] Input must be an integer: {inputStr}")
+
+    def traverse(self, level: int = 0) -> str:
+        tabs: str = "\t" * int(level) if int(level) > 0 else ""
+
+        outStr: str = f"{tabs}NT({type(self)})\n"
+
+        return outStr

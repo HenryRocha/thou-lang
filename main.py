@@ -33,8 +33,8 @@ def main() -> None:
     finalAST = parser.parse(tokens)
     logger.success(f"Final AST:\n{finalAST}")
 
-    symbolTable = SymbolTable()
-    finalAST.evaluate(symbolTable)
+    # symbolTable = SymbolTable()
+    # finalAST.evaluate(symbolTable)
 
 
 if __name__ == "__main__":

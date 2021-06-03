@@ -10,3 +10,13 @@ class Print(Node):
 
     def evaluate(self, symbolTable: SymbolTable) -> None:
         print(self.children[0].evaluate(symbolTable=symbolTable).value)
+
+    def traverse(self, level: int = 0) -> str:
+        tabs: str = "\t" * int(level) if int(level) > 0 else ""
+
+        outStr: str = f"{tabs}NT({type(self)})\n"
+
+        for child in self.children:
+            outStr += child.traverse(level=level + 1)
+
+        return outStr

@@ -12,3 +12,10 @@ class IntVal(Node):
 
     def evaluate(self, symbolTable: SymbolTable) -> int:
         return Value(ValueType.INT, int(self.value))
+
+    def traverse(self, level: int = 0) -> str:
+        tabs: str = "\t" * int(level) if int(level) > 0 else ""
+
+        outStr: str = f"{tabs}NT({type(self)}) NV({self.value})\n"
+
+        return outStr
