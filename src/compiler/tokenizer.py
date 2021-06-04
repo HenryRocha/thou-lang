@@ -41,7 +41,7 @@ class ThouLexer(Lexer):
     }
 
     # String containing ignored characters between tokens.
-    ignore = " \t\n"
+    ignore = " \t"
     ignore_comment = r"/\*(.*?)\*/"
 
     # Regular expression rules for tokens.
@@ -88,8 +88,5 @@ class ThouLexer(Lexer):
 
     @_(r"\n+")
     def ignore_newline(self, t):
+        # Define a rule so we can track line numbers
         self.lineno += len(t.value)
-
-    def error(self, t):
-        logger.critical(f"Line {self.lineno}: Unknown character {t.value[0]}")
-        self.index += 1

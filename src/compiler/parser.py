@@ -22,11 +22,19 @@ class ThouParser(Parser):
     def __init__(self):
         self.symbolTable = {}
 
+    def error(self, p):
+        logger.critical(f"[Parser] Unexpected token {p}")
+
     @_("{ parseFuncDef }")
     def parseFunctions(self, p):
         ret: Block = Block()
-        for node in p.parseFuncDef:
-            ret.addNode(node)
+
+        commands = [str(t.type) if type(t) == Token else str(t) for t in p._slice]
+        if commands == ["_1_repeat"]:
+            ret.setNodes(nodes=[node[0] for node in p._1_repeat])
+        else:
+            logger.critical(f"[ParseFunctions] Unexpected commands {commands}")
+
         return ret
 
     @_(

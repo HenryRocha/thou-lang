@@ -46,7 +46,7 @@ class FuncCall(Node):
         for statement in function.statements:
             logger.debug(f"[FuncCall] Running statement for function '{self.value}': {type(statement)}")
             ret: Union[None, Value] = statement.evaluate(symbolTable=function.symbolTable)
-            logger.success(f"[FuncCall] Function '{self.value}' returned {ret}")
+            logger.success(f"[FuncCall] Statement {type(statement)} for function '{self.value}' returned {ret}")
 
             if type(statement) not in [FuncCall, NoOp] and ret != None:
                 # Check if the returned type matches the one declared in the function.
