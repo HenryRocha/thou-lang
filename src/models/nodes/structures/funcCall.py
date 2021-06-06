@@ -33,7 +33,7 @@ class FuncCall(Node):
             # and then add it's evaluate result to the function's symbol table.
             for i in range(len(self.arguments)):
                 funcArg: FuncArg = function.arguments[i]
-                givenArg: Value = self.arguments[i].evaluate(symbolTable=function.symbolTable)
+                givenArg: Value = self.arguments[i].evaluate(symbolTable=symbolTable)
 
                 if givenArg.varType == funcArg.varType:
                     function.symbolTable.setVar(name=funcArg.varName, varType=funcArg.varType, value=givenArg.value)
@@ -48,7 +48,7 @@ class FuncCall(Node):
             ret: Union[None, Value] = statement.evaluate(symbolTable=function.symbolTable)
             logger.success(f"[FuncCall] Statement {type(statement)} for function '{self.value}' returned {ret}")
 
-            if type(statement) not in [FuncCall, NoOp] and ret != None:
+            if ret != None:
                 # Check if the returned type matches the one declared in the function.
                 if ret.varType == function.retType:
                     return ret

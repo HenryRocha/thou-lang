@@ -1,0 +1,19 @@
+maths soma(maths a, maths b)
+{
+    you_shalt_utter(0);
+}
+
+maths main()
+{
+    maths x = 1;
+    is_it_true y = it_is_sooth;
+    kayne_west_phrase stringer = "aaa";
+    thou_shalt_utter(x);
+    thou_shalt_utter(y);
+    thou_shalt_utter(stringer);
+}
+
+maths somaA(maths a, maths b)
+{
+    you_shalt_utter(0);
+}

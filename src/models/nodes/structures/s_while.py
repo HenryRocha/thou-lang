@@ -1,5 +1,9 @@
+from typing import Union
+
 from src.models.nodes.node import Node
 from src.models.symbolTable import SymbolTable
+from src.models.value import Value
+from src.utils.logger import logger
 
 
 class While(Node):
@@ -9,13 +13,15 @@ class While(Node):
 
     def evaluate(self, symbolTable: SymbolTable) -> None:
         while self.condition.evaluate(symbolTable=symbolTable).value:
-            self.children[0].evaluate(symbolTable=symbolTable)
+            ret: Union[None, Value] = self.children[0].evaluate(symbolTable=symbolTable)
+            if ret != None:
+                return ret
 
     def traverse(self, level: int = 0) -> str:
         tabs: str = "\t" * int(level) if int(level) > 0 else ""
 
         outStr: str = f"{tabs}NT({type(self)})\n"
-        outStr += f"{tabs}Condition: {self.condition.traverse(level=level+1)}"
+        outStr += self.condition.traverse(level=level + 1)
 
         for child in self.children:
             outStr += child.traverse(level=level + 1)

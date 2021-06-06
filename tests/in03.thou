@@ -1,0 +1,15 @@
+maths factorial(maths x)
+{
+    shouldst_this_be_true (x == 1)
+    {
+        return_to_the_one_whom_bid_thou 1;
+    } if_naught
+    {
+        return_to_the_one_whom_bid_thou x * factorial(x - 1);
+    }
+}
+
+maths main()
+{
+    thou_shalt_utter(factorial(4));
+}

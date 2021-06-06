@@ -17,8 +17,7 @@ class Block(Node):
         for node in self.children:
             logger.debug(f"[Block] Running evaluate for {type(node)}")
             ret: Union[None, Value] = node.evaluate(symbolTable=symbolTable)
-
-            if type(node) == Return:
+            if ret != None:
                 return ret
 
     def setNodes(self, nodes: List[Node]) -> None:

@@ -8,7 +8,7 @@ class NoOp(Node):
         super().__init__()
 
     def evaluate(self, symbolTable: SymbolTable) -> int:
-        return Value(ValueType.INT, 0)
+        pass
 
     def traverse(self, level: int = 0) -> str:
         tabs: str = "\t" * int(level) if int(level) > 0 else ""

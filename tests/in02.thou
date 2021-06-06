@@ -1,0 +1,17 @@
+maths sum(maths a, maths b)
+{
+    return_to_the_one_whom_bid_thou a + b;
+}
+
+maths main()
+{
+    maths x = 1;
+    is_it_true y = it_is_sooth;
+    x = sum(multiply(sum(1,1), 2), sum(2,2));
+    thou_shalt_utter(x);
+}
+
+maths multiply(maths a, maths b)
+{
+    return_to_the_one_whom_bid_thou a * b;
+}
