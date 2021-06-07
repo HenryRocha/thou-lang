@@ -1,0 +1,20 @@
+maths main()
+{
+    printer("asas");
+}
+
+maths printer(kayne_west_phrase phrase)
+{
+    maths x = 0;
+    shouldst_this_be_true (phrase == "asas")
+    {
+        x = 99;
+    }
+    if_naught
+    {
+        x = 88;
+    }
+
+    thou_shalt_utter(phrase);
+    thou_shalt_utter(x);
+}
