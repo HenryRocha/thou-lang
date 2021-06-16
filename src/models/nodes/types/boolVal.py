@@ -1,6 +1,7 @@
+from llvmlite import ir
+from llvmlite.ir.values import Constant
 from src.models.nodes.node import Node
 from src.models.symbolTable import SymbolTable
-from src.models.value import Value, ValueType
 
 
 class BoolVal(Node):
@@ -8,11 +9,8 @@ class BoolVal(Node):
         super().__init__()
         self.value = value
 
-    def evaluate(self, symbolTable: SymbolTable) -> bool:
-        if self.value:
-            return Value(ValueType.BOOL, True)
-        else:
-            return Value(ValueType.BOOL, False)
+    def evaluate(self, symbolTable: SymbolTable) -> Constant:
+        return ir.Constant(ir.IntType(1), int(self.value))
 
     def traverse(self, level: int = 0) -> str:
         tabs: str = "\t" * int(level) if int(level) > 0 else ""

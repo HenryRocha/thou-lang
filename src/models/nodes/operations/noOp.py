@@ -1,14 +1,15 @@
+from llvmlite import ir
+from llvmlite.ir.values import Constant
 from src.models.nodes.node import Node
 from src.models.symbolTable import SymbolTable
-from src.models.value import Value, ValueType
 
 
 class NoOp(Node):
     def __init__(self) -> None:
         super().__init__()
 
-    def evaluate(self, symbolTable: SymbolTable) -> int:
-        pass
+    def evaluate(self, symbolTable: SymbolTable) -> Constant:
+        return ir.Constant(ir.IntType(8), 0)
 
     def traverse(self, level: int = 0) -> str:
         tabs: str = "\t" * int(level) if int(level) > 0 else ""

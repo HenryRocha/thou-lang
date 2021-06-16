@@ -1,0 +1,9 @@
+kayne_west_phrase ret_str() {
+    return_to_the_one_whom_bid_thou "a";
+}
+
+maths main() {
+    thou_shalt_utter(ret_str());
+
+    return_to_the_one_whom_bid_thou 0;
+}

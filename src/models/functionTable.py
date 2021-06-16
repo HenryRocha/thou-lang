@@ -1,7 +1,7 @@
 from typing import Dict
 
-from src.utils.logger import logger
 from src.models.nodes.node import Node
+from src.utils.logger import logger
 
 
 class FunctionTable:
@@ -16,10 +16,10 @@ class FunctionTable:
         """
         logger.debug(f"[FuncTable] Looking up function '{func}'")
 
-        if func in self.table:
+        if self.declared(func):
             return self.table[func]
         else:
-            logger.critical(f"Unknown function '{func}'.")
+            logger.critical(f"[FuncTable] Unknown function '{func}'.")
 
     def setFunc(self, func: str, node: Node) -> None:
         """
@@ -31,6 +31,17 @@ class FunctionTable:
             self.table[func] = node
         else:
             logger.critical(f"[FuncTable] Function '{func}' already declared")
+
+    def delFunc(self, func: str) -> None:
+        """
+        Deletes the given function from the table.
+        """
+        logger.debug(f"[FuncTable] Deleting function '{func}'")
+
+        if self.declared(func):
+            del self.table[func]
+        else:
+            logger.critical(f"[FuncTable] Cannot delete function '{func}', it was not declared")
 
     def declared(self, func: str) -> bool:
         """

@@ -1,20 +1,18 @@
-maths main()
-{
-    printer("asas");
-}
+maths main() {
+    maths x = 4;
 
-maths printer(kayne_west_phrase phrase)
-{
-    maths x = 0;
-    shouldst_this_be_true (phrase == "asas")
+    thou_shall_repeat_if (x < 10)
     {
-        x = 99;
-    }
-    if_naught
-    {
-        x = 88;
+        shouldst_this_be_true (x == 1)
+        {
+            x = 99;
+            thou_shalt_utter(x);
+        } if_naught
+        {
+            x = x - 1;
+            thou_shalt_utter(x);
+        }
     }
 
-    thou_shalt_utter(phrase);
-    thou_shalt_utter(x);
+    return_to_the_one_whom_bid_thou 0;
 }

@@ -1,6 +1,5 @@
 from src.models.nodes.node import Node
 from src.models.symbolTable import SymbolTable
-from src.models.value import Value, ValueType
 from src.utils.logger import logger
 
 
@@ -10,17 +9,19 @@ class If(Node):
         self.condition = condition
 
     def evaluate(self, symbolTable: SymbolTable) -> bool:
-        conditionResult: Value = self.condition.evaluate(symbolTable=symbolTable)
-
+        conditionResult = self.condition.evaluate(symbolTable=symbolTable)
         logger.debug(f"[If] Condition result: {conditionResult}")
 
-        if conditionResult.varType == ValueType.STRING:
-            logger.critical(f"[If] Condition cannot be a STRING: {conditionResult}")
+        ret = None
+        with self.builder.if_else(conditionResult) as (then, otherwise):
+            with then:
+                ret = self.children[0].evaluate(symbolTable=symbolTable)
 
-        if bool(conditionResult.value):
-            return self.children[0].evaluate(symbolTable=symbolTable)
-        elif self.children[1] != None:
-            return self.children[1].evaluate(symbolTable=symbolTable)
+            with otherwise:
+                if self.children[1] != None:
+                    ret = self.children[1].evaluate(symbolTable=symbolTable)
+
+        return ret
 
     def traverse(self, level: int = 0) -> str:
         tabs: str = "\t" * int(level) if int(level) > 0 else ""

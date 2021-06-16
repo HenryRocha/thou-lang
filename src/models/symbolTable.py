@@ -1,33 +1,33 @@
-from typing import Dict, Union
+from typing import Dict
 
+from llvmlite.ir.values import Constant
 from src.utils.logger import logger
-from src.models.value import Value, ValueType
 
 
 class SymbolTable:
-    table: Dict[str, Dict[str, Union[int, bool, str]]]
+    table: Dict[str, Constant]
 
     def __init__(self) -> None:
         self.table = {}
 
-    def getVar(self, name: str) -> Union[ValueType, Union[int, bool, str]]:
+    def getVar(self, name: str) -> Constant:
         """
         Gets the value for the given variable name.
         """
         logger.debug(f"[SymbolTable] Looking up variable '{name}'")
 
-        if name in self.table:
-            return Value(self.table[name]["type"], self.table[name]["value"])
+        if self.declared(name):
+            return self.table[name]
         else:
             logger.critical(f"Unknown variable '{name}'.")
 
-    def setVar(self, name: str, varType: ValueType, value: Union[int, bool, str]) -> None:
+    def setVar(self, name: str, value: Constant) -> None:
         """
         Sets the value for the given variable name.
         """
-        logger.debug(f"[SymbolTable] Setting/updating variable '{name}', as {varType}, with value '{value}'")
+        logger.debug(f"[SymbolTable] Setting/updating variable '{name}', as {value.type}, with value '{value}'")
 
-        self.table[name] = {"type": varType, "value": value}
+        self.table[name] = value
 
     def declared(self, name: str) -> bool:
         """

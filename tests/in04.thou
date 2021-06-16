@@ -1,18 +1,13 @@
-maths random(maths x)
-{
-    thou_shall_repeat_if (x < 10)
-    {
-        shouldst_this_be_true (x == 1)
-        {
-            return_to_the_one_whom_bid_thou 99;
-        } if_naught
-        {
-            x = x - 1;
-        }
-    }
-}
-
 maths main()
 {
-    thou_shalt_utter(random(4));
+    thou_shalt_utter(printer("asas"));
+
+    return_to_the_one_whom_bid_thou 0;
+}
+
+maths printer(kayne_west_phrase phrase)
+{
+    thou_shalt_utter(phrase);
+
+    return_to_the_one_whom_bid_thou 0;
 }

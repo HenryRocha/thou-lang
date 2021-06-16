@@ -1,10 +1,12 @@
+from llvmlite.ir.builder import IRBuilder
+from llvmlite.ir.module import Module
+from llvmlite.ir.values import Function
 from sly import Parser
 from sly.lex import Token
-
-from src.models.nodes import *
-from src.utils.logger import logger
 from src.compiler.tokenizer import ThouLexer
+from src.models.nodes import *
 from src.models.value import ValueType
+from src.utils.logger import logger
 
 
 class ThouParser(Parser):
@@ -19,8 +21,28 @@ class ThouParser(Parser):
     debugfile = "./out/parser.out"
     start = "parseFunctions"
 
-    def __init__(self):
-        self.symbolTable = {}
+    def __init__(self, module: Module, builder: IRBuilder, printf: Function):
+        self.module = module
+        self.builder = builder
+        self.printf = printf
+
+        Node.module = self.module
+        Node.builder = self.builder
+        Node.printf = self.printf
+
+        int_fmt_str = "%i \n\0"
+        int_c_fmt = ir.Constant(ir.ArrayType(ir.IntType(8), len(int_fmt_str)), bytearray(int_fmt_str.encode("UTF-8")))
+        Node.int_fmt = ir.GlobalVariable(module, int_c_fmt.type, name="fstr_int")
+        Node.int_fmt.linkage = "internal"
+        Node.int_fmt.global_constant = True
+        Node.int_fmt.initializer = int_c_fmt
+
+        str_fmt_str = "%c \n\0"
+        str_c_fmt = ir.Constant(ir.ArrayType(ir.IntType(8), len(str_fmt_str)), bytearray(str_fmt_str.encode("UTF-8")))
+        Node.str_fmt = ir.GlobalVariable(module, str_c_fmt.type, name="fstr_str")
+        Node.str_fmt.linkage = "internal"
+        Node.str_fmt.global_constant = True
+        Node.str_fmt.initializer = str_c_fmt
 
     def error(self, p):
         logger.critical(f"[Parser] Unexpected token {p}")
@@ -49,10 +71,48 @@ class ThouParser(Parser):
         if commands == ["TYPE_INT", "IDENTIFIER", "LPAREN", "_4_repeat", "RPAREN", "parseCommand"]:
             logger.debug(f"[ParseFuncDef] Consumed function declaration '{p._slice[1].value}'")
 
-            ret = FuncDec(value=p._slice[1].value, retType=ValueType.INT)
+            ret = FuncDec(value=p._slice[1].value, retType=ir.IntType(64))
             logger.trace(f"[ParseFunctionDef] Arguments for '{p._slice[1].value}' {type(p._4_repeat)} {p._4_repeat}")
             ret.setArguments(p._4_repeat[0][0] if len(p._4_repeat) > 0 else [])
-            ret.setStatements(p.parseCommand.children)
+
+            statementsBlock: Block = p.parseCommand
+
+            # Automatically insert a return statement to function.
+            if p._slice[1].value != "main":
+                statementsBlock.addNode(Return("RETURN", IntVal(0)))
+
+            ret.setStatements(statementsBlock)
+
+        elif commands == ["TYPE_BOOL", "IDENTIFIER", "LPAREN", "_3_repeat", "RPAREN", "parseCommand"]:
+            logger.debug(f"[ParseFuncDef] Consumed function declaration '{p._slice[1].value}'")
+
+            ret = FuncDec(value=p._slice[1].value, retType=ir.IntType(1))
+            logger.trace(f"[ParseFunctionDef] Arguments for '{p._slice[1].value}' {type(p._3_repeat)} {p._3_repeat}")
+            ret.setArguments(p._3_repeat[0][0] if len(p._3_repeat) > 0 else [])
+
+            statementsBlock: Block = p.parseCommand
+
+            # Automatically insert a return statement to function.
+            if p._slice[1].value != "main":
+                statementsBlock.addNode(Return("RETURN", BoolVal(False)))
+
+            ret.setStatements(statementsBlock)
+
+        elif commands == ["TYPE_STRING", "IDENTIFIER", "LPAREN", "_2_repeat", "RPAREN", "parseCommand"]:
+            logger.debug(f"[ParseFuncDef] Consumed function declaration '{p._slice[1].value}'")
+
+            ret = FuncDec(value=p._slice[1].value, retType=ir.ArrayType(ir.IntType(8), 128))
+            logger.trace(f"[ParseFunctionDef] Arguments for '{p._slice[1].value}' {type(p._2_repeat)} {p._2_repeat}")
+            ret.setArguments(p._2_repeat[0][0] if len(p._2_repeat) > 0 else [])
+
+            statementsBlock: Block = p.parseCommand
+
+            # Automatically insert a return statement to function.
+            if p._slice[1].value != "main":
+                statementsBlock.addNode(Return("RETURN", StringVal("")))
+
+            ret.setStatements(statementsBlock)
+
         else:
             logger.critical(f"[ParseFuncDef] Unexpected commands {commands}")
 
@@ -73,11 +133,11 @@ class ThouParser(Parser):
         logger.trace(f"[ParseFuncDefArg] Consumed argument {p._slice}")
 
         if p._slice[0].type == "TYPE_INT":
-            return FuncArg(ValueType.INT, p._slice[1].value)
+            return FuncArg(ir.IntType(64), p._slice[1].value)
         elif p._slice[0].type == "TYPE_BOOL":
-            return FuncArg(ValueType.BOOL, p._slice[1].value)
+            return FuncArg(ir.IntType(1), p._slice[1].value)
         elif p._slice[0].type == "TYPE_STRING":
-            return FuncArg(ValueType.STRING, p._slice[1].value)
+            return FuncArg(ir.ArrayType(ir.IntType(8), 128), p._slice[1].value)
 
     @_("LBRACKET { parseCommand } RBRACKET")
     def parseBlock(self, p):

@@ -1,19 +1,13 @@
-maths soma(maths a, maths b)
-{
-    you_shalt_utter(0);
-}
-
 maths main()
 {
     maths x = 1;
-    is_it_true y = it_is_sooth;
-    kayne_west_phrase stringer = "aaa";
     thou_shalt_utter(x);
+    
+    is_it_true y = it_is_sooth;
     thou_shalt_utter(y);
-    thou_shalt_utter(stringer);
-}
+    
+    kayne_west_phrase z = "aaa";
+    thou_shalt_utter(z);
 
-maths somaA(maths a, maths b)
-{
-    you_shalt_utter(0);
+    return_to_the_one_whom_bid_thou 0;
 }

@@ -1,9 +1,12 @@
 import argparse
 import pathlib
+from typing import Generator
 
+from src.compiler.codegen import CodeGen
 from src.compiler.parser import ThouParser
 from src.compiler.tokenizer import ThouLexer
-from src.models.nodes.structures.funcCall import FuncCall
+from src.models.functionTable import functionTable
+from src.models.nodes.structures.block import Block
 from src.models.symbolTable import SymbolTable
 from src.utils.logger import logger
 
@@ -27,21 +30,27 @@ def main() -> None:
             sourceCode = f.read()
         logger.info("[Main] Done")
 
-    lexer = ThouLexer()
-    tokens = lexer.tokenize(sourceCode)
-    parser = ThouParser()
+    lexer: ThouLexer = ThouLexer()
+    tokens: Generator = lexer.tokenize(sourceCode)
+    codegen: CodeGen = CodeGen()
+    parser: ThouParser = ThouParser(codegen.module, codegen.builder, codegen.printf)
 
-    finalAST = parser.parse(tokens)
-    finalAST.addNode(FuncCall(value="main", arguments=[]))
+    finalAST: Block = parser.parse(tokens)
     logger.success(f"[Main] Final AST:\n{finalAST}")
 
     for node in finalAST.children:
         logger.info(f"[Main] Running evaluate for {type(node)}")
+        node.evaluate()
 
-        if type(node) == FuncCall and node.value == "main":
-            node.evaluate(symbolTable=SymbolTable())
-        else:
-            node.evaluate()
+    # Update the main function.
+    mainFunc = functionTable.getFunc("main")
+    functionTable.delFunc("main")
+    mainFunc.ptr = codegen.base_func
+    mainFunc.statements.evaluate(symbolTable=SymbolTable())
+    functionTable.setFunc("main", mainFunc)
+
+    codegen.create_ir()
+    codegen.save_ir("./out/output.ll")
 
 
 if __name__ == "__main__":

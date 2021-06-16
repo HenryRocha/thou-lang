@@ -1,6 +1,5 @@
 from src.models.nodes.node import Node
 from src.models.symbolTable import SymbolTable
-from src.models.value import Value, ValueType
 
 
 class UnOp(Node):
@@ -9,14 +8,14 @@ class UnOp(Node):
         self.operation = operation
 
     def evaluate(self, symbolTable: SymbolTable) -> int:
-        var: Value = self.children[0].evaluate(symbolTable=symbolTable)
+        var = self.children[0].evaluate(symbolTable=symbolTable)
 
         if self.operation == "PLUS":
-            return Value(ValueType.INT, +var.value)
+            return var
         elif self.operation == "MINUS":
-            return Value(ValueType.INT, -var.value)
+            return self.builder.neg(var)
         elif self.operation == "NOT":
-            return Value(ValueType.BOOL, not bool(var.value))
+            return self.builder.not_(var)
 
     def traverse(self, level: int = 0) -> str:
         tabs: str = "\t" * int(level) if int(level) > 0 else ""

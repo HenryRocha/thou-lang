@@ -1,0 +1,9 @@
+is_it_true ret_bool(is_it_true a) {
+    return_to_the_one_whom_bid_thou a;
+}
+
+maths main() {
+    thou_shalt_utter(ret_bool(it_is_sooth));
+
+    return_to_the_one_whom_bid_thou 0;
+}

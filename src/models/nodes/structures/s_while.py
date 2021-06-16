@@ -1,9 +1,5 @@
-from typing import Union
-
 from src.models.nodes.node import Node
 from src.models.symbolTable import SymbolTable
-from src.models.value import Value
-from src.utils.logger import logger
 
 
 class While(Node):
@@ -12,10 +8,30 @@ class While(Node):
         self.condition = condition
 
     def evaluate(self, symbolTable: SymbolTable) -> None:
-        while self.condition.evaluate(symbolTable=symbolTable).value:
-            ret: Union[None, Value] = self.children[0].evaluate(symbolTable=symbolTable)
-            if ret != None:
-                return ret
+        # Get the condition result.
+        conditionResult = self.condition.evaluate(symbolTable=symbolTable)
+
+        # Create the markers, equivalent to labels in ASM.
+        while_entry = self.builder.append_basic_block(name=f"while_{self.nid}")
+        while_exit = self.builder.append_basic_block(name=f"while_{self.nid}_exit")
+
+        # Create a contidional branch, based on the condition result.
+        # If the result was true, go back to while_entry, if not, go
+        # to while_exit.
+        self.builder.cbranch(conditionResult, while_entry, while_exit)
+        self.builder.position_at_start(while_entry)
+
+        # Run block inside while.
+        self.children[0].evaluate(symbolTable=symbolTable)
+
+        # Evaluate the condition again.
+        conditionResult = self.condition.evaluate(symbolTable=symbolTable)
+
+        # Create a contidional branch, based on the condition result.
+        # If the result was true, go back to while_entry, if not, go
+        # to while_exit.
+        self.builder.cbranch(conditionResult, while_entry, while_exit)
+        self.builder.position_at_start(while_exit)
 
     def traverse(self, level: int = 0) -> str:
         tabs: str = "\t" * int(level) if int(level) > 0 else ""

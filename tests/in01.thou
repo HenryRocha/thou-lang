@@ -1,17 +1,23 @@
-maths sum(maths a, maths b)
+maths multiply(maths a, maths b)
 {
-    return_to_the_one_whom_bid_thou a + b;
+    return_to_the_one_whom_bid_thou a * b;
 }
 
 maths main()
 {
-    maths x = 1;
-    is_it_true y = it_is_sooth;
-    x = sum(1, 2);
+    maths x = sum(25, 26);
     thou_shalt_utter(x);
+
+    maths y = multiply(10, 10);
+    thou_shalt_utter(y);
+
+    maths z = sum(10, multiply(100, 100));
+    thou_shalt_utter(z);
+
+    return_to_the_one_whom_bid_thou 0;
 }
 
-maths multiply(maths a, maths b)
+maths sum(maths a, maths b)
 {
-    return_to_the_one_whom_bid_thou a * b;
+    return_to_the_one_whom_bid_thou a + b;
 }

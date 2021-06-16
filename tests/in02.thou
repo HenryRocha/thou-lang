@@ -1,17 +1,17 @@
-maths sum(maths a, maths b)
+maths factorial(maths x)
 {
-    return_to_the_one_whom_bid_thou a + b;
+    shouldst_this_be_true (x == 1)
+    {
+        return_to_the_one_whom_bid_thou 1;
+    } if_naught
+    {
+        return_to_the_one_whom_bid_thou x * factorial(x - 1);
+    }
 }
 
 maths main()
 {
-    maths x = 1;
-    is_it_true y = it_is_sooth;
-    x = sum(multiply(sum(1,1), 2), sum(2,2));
-    thou_shalt_utter(x);
-}
+    thou_shalt_utter(factorial(1));
 
-maths multiply(maths a, maths b)
-{
-    return_to_the_one_whom_bid_thou a * b;
+    return_to_the_one_whom_bid_thou 0;
 }

@@ -2,7 +2,7 @@ from typing import List, Union
 
 from src.models.nodes.node import Node
 from src.models.symbolTable import SymbolTable
-from src.models.value import Value, ValueType
+from src.models.value import ValueType
 from src.utils.logger import logger
 
 
@@ -17,33 +17,28 @@ class Identifier(Node):
             if self.varType == None:
                 logger.critical(f"[Identifier] Missing type on declaration for variable '{self.varName}'")
 
-            var: Value = self.children[0].evaluate(symbolTable=symbolTable)
+            # Evaluate the variable.
+            var = self.children[0].evaluate(symbolTable=symbolTable)
 
-            logger.debug(f"[Identifier] Setting variable ({self.varType}) {self.varName} = {var.value}")
-            symbolTable.setVar(name=self.varName, varType=self.varType, value=var.value)
+            # Allocate a space in memory for this variable, according to it's type.
+            irAllocPtr = self.builder.alloca(var.type, name=self.varName)
 
         else:
             if self.varType != None:
                 logger.critical(f"[Identifier] Variable '{self.varName}' already declared. Type: {self.varType}")
 
-            var: Value = self.children[0].evaluate(symbolTable=symbolTable)
-            existingVar: Value = symbolTable.getVar(name=self.varName)
+            # Evaluate the new value for the variable.
+            var = self.children[0].evaluate(symbolTable=symbolTable)
 
-            if (existingVar.varType in [ValueType.INT, ValueType.BOOL] and var.varType == ValueType.STRING) or (
-                existingVar.varType == ValueType.STRING and var.varType in [ValueType.INT, ValueType.BOOL]
-            ):
-                logger.critical(
-                    f"[Identifier] Variable reassign with mismatching types. '{self.varName}' has type {existingVar.varType} but was reassigned to {var.varType}"
-                )
+            # Retrieve the pointer to this variable.
+            irAllocPtr = symbolTable.getVar(name=self.varName)
 
-            logger.debug(f"[Identifier] Setting variable ({var.varType}) {self.varName} = {var.value}")
+        # Store the variable in memory, with the new value.
+        self.builder.store(var, irAllocPtr)
+        logger.debug(f"[Identifier] Setting variable ({var.type}) {self.varName} = {var}")
 
-            if existingVar.varType == ValueType.INT:
-                symbolTable.setVar(name=self.varName, varType=existingVar.varType, value=int(var.value))
-            elif existingVar.varType == ValueType.BOOL:
-                symbolTable.setVar(name=self.varName, varType=existingVar.varType, value=bool(var.value))
-            elif existingVar.varType == ValueType.STRING:
-                symbolTable.setVar(name=self.varName, varType=existingVar.varType, value=str(var.value))
+        # Set the variable on the symbol table.
+        symbolTable.setVar(name=self.varName, value=irAllocPtr)
 
     def traverse(self, level: int = 0) -> str:
         tabs: str = "\t" * int(level) if int(level) > 0 else ""
