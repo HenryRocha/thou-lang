@@ -11,7 +11,7 @@ maths factorial(maths x)
 
 maths main()
 {
-    thou_shalt_utter(factorial(1));
+    thou_shalt_utter(factorial(5));
 
     return_to_the_one_whom_bid_thou 0;
 }

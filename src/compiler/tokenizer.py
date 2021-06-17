@@ -1,5 +1,4 @@
 from sly import Lexer
-from src.utils.logger import logger
 
 
 class ThouLexer(Lexer):
@@ -11,7 +10,6 @@ class ThouLexer(Lexer):
         MULTIPLY,
         DIVIDE,
         NOT,
-        ASSIGN,
         LPAREN,
         RPAREN,
         LBRACKET,
@@ -29,6 +27,7 @@ class ThouLexer(Lexer):
         CMP_NEQ,
         CMP_AND,
         CMP_OR,
+        ASSIGN,
         SEPARATOR,
         ARG_SEPARATOR,
         TYPE_INT,
@@ -61,10 +60,10 @@ class ThouLexer(Lexer):
     VAL_NUMBER = r"\d+"
     VAL_STRING = r"""("[^"\\]*(\\.[^"\\]*)*"|'[^'\\]*(\\.[^'\\]*)*')"""
 
-    CMP_LT = r"<"
     CMP_LEQ = r"<="
-    CMP_GT = r">"
+    CMP_LT = r"<"
     CMP_GEQ = r">="
+    CMP_GT = r">"
     CMP_NEQ = r"!="
     CMP_EQ = r"=="
 

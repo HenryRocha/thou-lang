@@ -1,0 +1,14 @@
+maths main() {
+    maths x = 10;
+
+    thou_shalt_utter(x < 20);
+    thou_shalt_utter(x <= 20);
+    thou_shalt_utter(x > 20);
+    thou_shalt_utter(x >= 20);
+    thou_shalt_utter(x != 20);
+    thou_shalt_utter(x == 20);
+    thou_shalt_utter(x && 20);
+    thou_shalt_utter(x || 20);
+
+    return_to_the_one_whom_bid_thou 0;
+}

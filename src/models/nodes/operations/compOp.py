@@ -19,14 +19,20 @@ class CompOp(Node):
         result: bool = False
         if self.operation == "CMP_EQ":
             result = self.builder.icmp_signed("==", leftSide, rightSide)
+        elif self.operation == "CMP_NEQ":
+            result = self.builder.icmp_signed("!=", leftSide, rightSide)
         elif self.operation == "CMP_GT":
             result = self.builder.icmp_signed(">", leftSide, rightSide)
+        elif self.operation == "CMP_GEQ":
+            result = self.builder.icmp_signed(">=", leftSide, rightSide)
         elif self.operation == "CMP_LT":
             result = self.builder.icmp_signed("<", leftSide, rightSide)
+        elif self.operation == "CMP_LEQ":
+            result = self.builder.icmp_signed("<=", leftSide, rightSide)
         elif self.operation == "CMP_AND":
             result = self.builder.and_(leftSide, rightSide)
         elif self.operation == "CMP_OR":
-            result = self.builder.or_("==", leftSide, rightSide)
+            result = self.builder.or_(leftSide, rightSide)
         else:
             logger.critical(f"[CompOp] Invalid comparison type: {self.operation}")
 
