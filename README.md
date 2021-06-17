@@ -7,27 +7,27 @@ Custom programming language based on the classic english grammar. Created for In
 ```
 MAIN = FUNCTION ;
 
-FUNCTION = "thou_shalt_do", TYPE, IDENTIFIER, "(", [{PARAM}], ")", BLOCK, "you_shalt_not_pass", ";" ;
+FUNCTION = TYPE, IDENTIFIER, "(", [{PARAM}], ")", BLOCK ;
 PARAM = TYPE, IDENTIFIER ;
+RETURN = "return_to_the_one_whom_bid_thou", (EXPRESSION | COMPARISON), ";" ;
 
-FUNCTION_CALL = IDENTIFIER, "(", (EXPRESSION | COMPARISON), {",", (EXPRESSION | COMPARISON)}, ")" ;
-RETURN = "return_to_the_one_whom_bid_thou", (EXPRESSION | COMPARISON) ;
+FUNCTION_CALL = IDENTIFIER, "(", (EXPRESSION | COMPARISON), {",", (EXPRESSION | COMPARISON)}, ")", ";" ;
 
 BLOCK = "{", STATEMENT, { STATEMENT }, "}" ;
 STATEMENT = ( λ | ASSIGNMENT | PRINT | IF | WHILE | RETURN | FUNCTION_CALL) ;
 
-PRINT = "thou_shalt_utter", "(", (EXPRESSION | COMPARISON), ")" ;
+PRINT = "thou_shalt_utter", "(", (EXPRESSION | COMPARISON), ")", ";" ;
 
-IF = "shouldst_this_be_true", "(", COMPARISSON, ")", BLOCK, { ELSEIF | ELSE }, "thou_shouldst_forbear_comparing" ;
-ELSEIF = "or_shouldst_this_be_true", "(", COMPARISSON, ")", BLOCK, { ELSEIF | ELSE } ;
+IF = "shouldst_this_be_true", "(", COMPARISSON, ")", BLOCK, { ELSE };
 ELSE = "if_naught", BLOCK ;
 
-WHILE = "thou_shall_repeat_if", "(", COMPARISSON, ")", BLOCK, "thou_shouldst_forbear_repeating" ;
+WHILE = "thou_shall_repeat_if", "(", COMPARISSON, ")", BLOCK ;
 
 TYPE = "maths" | "is_it_true" | "kayne_west_phrase" ;
 IDENTIFIER = LETTER, { LETTER | DIGIT | "_" } ;
 
-ASSIGNMENT = "call_me", IDENTIFIER, "for_i_am", TYPE, "=", (COMPARISON | EXPRESSION | NUMBER | STRING | BOOLEAN) ;
+ASSIGNMENT = TYPE, IDENTIFIER, "=", (COMPARISON | EXPRESSION | NUMBER | STRING | BOOLEAN), ";" ;
+ASSIGNMENT = TYPE, IDENTIFIER, ";" ;
 COMPARISON = EXPRESSION, (">", "<", "==", ">=", "<=", "!="), EXPRESSION ;
 
 EXPRESSION = TERM, { ("+" | "-"), TERM } ;
